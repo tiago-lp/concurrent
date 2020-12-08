@@ -8,6 +8,8 @@ Aqui iremos exemplificar baseado no livro The Little Book of Semaphores
 cap. 3.8. Colocando as abstrações para uma pista de Dança e para Pessoas no baile
 querendo dançar. Só é possível entrar em pares para dançar. Depois essas pessoas saem
 da pista e entra as duas seguintes, e assim por diante.
+as vars utilizadas especificamente que representarão filas serão
+'queue_to_dance' e 'queue_to_leave'
 """
 
 log = logger.get_logger("Queue")
@@ -61,7 +63,7 @@ class Counter():
         self.not_dancando = 0
         self.mutex = Semaphore(1)
         self.mutex2 = Semaphore(1)
-        self.queu_to_dance = Semaphore(0)
+        self.queue_to_dance = Semaphore(0)
         self.queue_to_leave = Semaphore(0)
         self.todos_dancando = Semaphore(0)
         self.todos_fora_da_pista = Semaphore(0)
@@ -88,8 +90,8 @@ class Pista(Thread):
         """
         return self.counter.ja_dancaram + self.counter.max > self.counter.num_pessoas
 
-    def nao_tem_passageiros(self):
-        """Verifica se nao tem mais nenhum passageiro esperando para embarcar."""
+    def nao_tem_pessoas(self):
+        """Verifica se nao tem mais nenhuma pessoa esperando para dançar."""
         return self.counter.ja_dancaram == self.counter.num_pessoas
 
     def sinaliza_passageiros(self, sem):
@@ -112,7 +114,7 @@ class Pista(Thread):
         while True:
             pista_livre()
 
-            if self.nao_tem_passageiros():
+            if self.nao_tem_pessoas():
                 finalizar()
 
             if self.sobrou_pessoas():
@@ -120,7 +122,7 @@ class Pista(Thread):
                 falta_dancarinos(sobraram, self.counter.max)
 
 
-            self.sinaliza_passageiros(self.counter.queu_to_dance)
+            self.sinaliza_passageiros(self.counter.queue_to_dance)
                 
             self.counter.todos_dancando.acquire()
             dancar()
@@ -153,7 +155,7 @@ class Pessoa(Thread):
         self.start()
 
     def run(self):
-        self.counter.queu_to_dance.acquire()
+        self.counter.queue_to_dance.acquire()
         entrar_na_pista(self.id)
         self.counter.mutex.acquire()
         self.counter.dancando += 1
@@ -179,4 +181,4 @@ if __name__ == "__main__":
     counter = Counter(pessoas)
     _pista = Pista(counter)
     for num in range(pessoas):
-        _passageiro = Pessoa(counter, num)
+        _pessoa = Pessoa(counter, num)
