@@ -34,7 +34,7 @@ class T(Thread):
     def run(self):
         """
         Execução da thread A baseada na
-        solução dada no cap. 3.3 do livro
+        solução dada no cap. 3.4 do livro
         The Little Book of Semaphores.
         """
         mutex.acquire()
