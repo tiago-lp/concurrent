@@ -56,7 +56,7 @@ class Counter():
         """
         self.max = 2
         self.num_pessoas = num_pessoas
-        self.ja_viajaram = 0
+        self.ja_dancaram = 0
         self.dancando = 0
         self.not_dancando = 0
         self.mutex = Semaphore(1)
@@ -86,11 +86,11 @@ class Pista(Thread):
         """Verifica se sobrou pessoas esperando para entrar
         que nao contempla a lotacao do da pista.
         """
-        return self.counter.ja_viajaram + self.counter.max > self.counter.num_pessoas
+        return self.counter.ja_dancaram + self.counter.max > self.counter.num_pessoas
 
     def nao_tem_passageiros(self):
         """Verifica se nao tem mais nenhum passageiro esperando para embarcar."""
-        return self.counter.ja_viajaram == self.counter.num_pessoas
+        return self.counter.ja_dancaram == self.counter.num_pessoas
 
     def sinaliza_passageiros(self, sem):
         """Isto eh necessario em python
@@ -116,7 +116,7 @@ class Pista(Thread):
                 finalizar()
 
             if self.sobrou_pessoas():
-                sobraram = self.counter.num_pessoas - self.counter.ja_viajaram
+                sobraram = self.counter.num_pessoas - self.counter.ja_dancaram
                 falta_dancarinos(sobraram, self.counter.max)
 
 
@@ -166,7 +166,7 @@ class Pessoa(Thread):
         sair_da_pista(self.id)
         self.counter.mutex2.acquire()
         self.counter.not_dancando += 1
-        self.counter.ja_viajaram += 1
+        self.counter.ja_dancaram += 1
         if self.counter.not_dancando == self.counter.max:
             self.counter.todos_fora_da_pista.release()
             self.counter.not_dancando = 0
